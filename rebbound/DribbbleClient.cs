@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Rebbound.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Rebbound
 {
@@ -17,6 +19,7 @@ namespace Rebbound
 
         private const string ShotsEndpoint = "/shots/{0}";
 
+        private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
 
         private BaseCredentials credentials;
 
@@ -93,6 +96,81 @@ namespace Rebbound
                     return serializer.Deserialize<Shot>(jsonReader);
                 }
             }
+        }
+
+        public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
+        {
+            HttpClient client = new HttpClient();
+
+            foreach (var header in this.credentials.ToHttpHeaders())
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+
+            var result = await client.GetStreamAsync(string.Format(ShotPaletteEndpoint, shotId)).ConfigureAwait(false);
+
+            var palette = new List<RgbColor>();
+
+            using (BinaryReader reader = new BinaryReader(result))
+            {
+                var versionData = reader.ReadBytes(2).Reverse().ToArray();
+                var version = BitConverter.ToUInt16(versionData, 0);
+
+                if (version != 1)
+                {
+                    throw new InvalidDataException("Only version 1 of Adobe Color files is supported.");
+                }
+
+                var colourCountData = reader.ReadBytes(2).Reverse().ToArray();
+                var colourCount = BitConverter.ToUInt16(colourCountData, 0);
+
+                for (int i = 0; i < colourCount; i++)
+                {
+                    reader.ReadBytes(2 * 5);
+                }
+
+
+                versionData = reader.ReadBytes(2).Reverse().ToArray();
+                version = BitConverter.ToUInt16(versionData, 0);
+
+                if (version != 2)
+                {
+                    throw new InvalidDataException("Only version 1 of Adobe Color files is supported.");
+                }
+
+                colourCountData = reader.ReadBytes(2).Reverse().ToArray();
+                colourCount = BitConverter.ToUInt16(colourCountData, 0);
+
+                for (int i = 0; i < colourCount; i++)
+                {
+                    var colourSpaceData = reader.ReadBytes(2).Reverse().ToArray();
+                    var colourSpace = BitConverter.ToInt16(colourSpaceData, 0);
+
+                    if (colourSpace != 0)
+                    {
+                        throw new InvalidDataException("Only RGB colours are supported.");
+                    }
+
+                    var rData = reader.ReadBytes(2).Reverse().ToArray();
+                    var r = BitConverter.ToUInt16(rData, 0);
+
+                    var gData = reader.ReadBytes(2).Reverse().ToArray();
+                    var g = BitConverter.ToUInt16(gData, 0);
+
+                    var bData = reader.ReadBytes(2).Reverse().ToArray();
+                    var b = BitConverter.ToUInt16(bData, 0);
+
+                    var aData = reader.ReadBytes(2).Reverse().ToArray();
+                    var a = BitConverter.ToUInt16(aData, 0);
+
+                    var nameData = reader.ReadBytes(4).Reverse().ToArray();
+                    var name = reader.ReadChars((int)BitConverter.ToUInt32(nameData, 0) * 2);
+
+                    palette.Add(new RgbColor((byte)(r / 256), (byte)(g / 256), (byte)(b / 256)));
+                }
+            }
+
+            return palette;
         }
     }
 }

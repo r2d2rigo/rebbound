@@ -10,5 +10,6 @@ namespace Rebbound
         Task<List<Shot>> GetUserShotsAsync(int userId);
 
         Task<Shot> GetShotAsync(int shotId);
+        Task<List<RgbColor>> GetShotPaletteAsync(int shotId);
     }
 }

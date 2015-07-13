@@ -38,6 +38,7 @@
     <Compile Include="BearerTokenCredentials.cs" />
     <Compile Include="DribbbleClient.cs" />
     <Compile Include="IDribbbleClient.cs" />
+    <Compile Include="Models\RgbColor.cs" />
     <Compile Include="Models\Shot.cs" />
     <Compile Include="Models\ShotImages.cs" />
     <Compile Include="Models\User.cs" />
