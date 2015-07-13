@@ -62,6 +62,18 @@ namespace Rebbound.Tests
                 Assert.AreEqual(colours[0].B, palette[0].B);
             }
         }
+
+        [TestMethod]
+        public async Task TestGetShotCommentsAsync()
+        {
+            var comments = await dribbbleService.GetShotCommentsAsync(1);
+
+            Assert.IsTrue(comments.Count >= 12);
+
+            Assert.AreEqual(1, comments[0].Id);
+            Assert.IsTrue(comments[0].LikesCount >= 2);
+            Assert.AreEqual("owltastic", comments[0].User.Username);
+        }
     }
 }
 
