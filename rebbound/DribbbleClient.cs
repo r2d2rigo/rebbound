@@ -19,6 +19,8 @@ namespace Rebbound
 
         private const string ShotsEndpoint = "/shots/{0}";
 
+        private const string ShotCommentsEndpoint = "/shots/{0}/comments";
+
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
 
         private BaseCredentials credentials;
@@ -171,6 +173,28 @@ namespace Rebbound
             }
 
             return palette;
+        }
+
+        public async Task<List<Comment>> GetShotCommentsAsync(int shotId)
+        {
+            HttpClient client = new HttpClient();
+
+            foreach (var header in this.credentials.ToHttpHeaders())
+            {
+                client.DefaultRequestHeaders.Add(header.Key, header.Value);
+            }
+
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(result))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<List<Comment>>(jsonReader);
+                }
+            }
         }
     }
 }

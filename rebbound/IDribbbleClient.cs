@@ -11,5 +11,6 @@ namespace Rebbound
 
         Task<Shot> GetShotAsync(int shotId);
         Task<List<RgbColor>> GetShotPaletteAsync(int shotId);
+        Task<List<Comment>> GetShotCommentsAsync(int shotId);
     }
 }
