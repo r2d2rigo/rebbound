@@ -44,11 +44,11 @@ namespace Rebbound.Tests
             var palette = await dribbbleService.GetShotPaletteAsync(1);
 
             Assert.AreEqual(6, palette.Count);
-
+                
             var colours = new[]
                 {
-                    new RgbColor(159, 145, 149),
                     new RgbColor(237, 237, 229),
+                    new RgbColor(159, 145, 149),
                     new RgbColor(52, 52, 84),
                     new RgbColor(28, 26, 32),
                     new RgbColor(96, 87, 100),
