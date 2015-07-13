@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rebbound.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -35,6 +36,31 @@ namespace Rebbound.Tests
             Assert.IsTrue(string.IsNullOrEmpty(shot.Images.HiDpi));
             Assert.IsFalse(string.IsNullOrEmpty(shot.Images.Normal));
             Assert.IsFalse(string.IsNullOrEmpty(shot.Images.Teaser));
+        }
+
+        [TestMethod]
+        public async Task TestGetShotPaletteAsync()
+        {
+            var palette = await dribbbleService.GetShotPaletteAsync(1);
+
+            Assert.AreEqual(6, palette.Count);
+
+            var colours = new[]
+                {
+                    new RgbColor(159, 145, 149),
+                    new RgbColor(237, 237, 229),
+                    new RgbColor(52, 52, 84),
+                    new RgbColor(28, 26, 32),
+                    new RgbColor(96, 87, 100),
+                    new RgbColor(153, 105, 90),
+                };
+
+            for (int i = 0; i < 6; i++ )
+            {
+                Assert.AreEqual(colours[0].R, palette[0].R);
+                Assert.AreEqual(colours[0].G, palette[0].G);
+                Assert.AreEqual(colours[0].B, palette[0].B);
+            }
         }
     }
 }
