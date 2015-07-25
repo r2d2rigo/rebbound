@@ -20,7 +20,7 @@ namespace Rebbound
 
         private const string UserShotsEndpoint = "/users/{0}/shots";
 
-        private const string ShotsEndpoint = "/shots/{0}";
+        private const string ShotsEndpoint = "/shots/";
 
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
@@ -99,7 +99,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, ShotsEndpoint + shotId.ToString())).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -111,6 +111,28 @@ namespace Rebbound
                 }
             }
         }
+
+        public async Task<List<Shot>> GetShotsAsync(ShotSortMode sortMode)
+        {
+            HttpClient client = new HttpClient();
+            this.AddAuthorizationHeader(client);
+
+            var uri = string.Join(string.Empty, ApiBase, ShotsEndpoint);
+            uri = uri + "?sort=" + sortMode.ToString().ToLower();
+
+            var result = await client.GetStringAsync(uri).ConfigureAwait(false);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(result))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<List<Shot>>(jsonReader);
+                }
+            }
+        }
+
 
         public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
         {
