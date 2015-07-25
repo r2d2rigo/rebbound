@@ -10,14 +10,13 @@ namespace Rebbound.Tests
     [TestClass]
     public class UserTests
     {
-        private BaseCredentials credentials;
         private DribbbleClient dribbbleService;
 
         [TestInitialize]
         public void InitializeTests()
         {
-            credentials = new BearerTokenCredentials(ConfigurationManager.AppSettings["BearerToken"]);
-            dribbbleService = new DribbbleClient(credentials);
+            dribbbleService = new DribbbleClient();
+            dribbbleService.AccessToken = ConfigurationManager.AppSettings["BearerToken"];
         }
 
         [TestMethod]

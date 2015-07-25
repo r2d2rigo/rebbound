@@ -34,8 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BaseCredentials.cs" />
-    <Compile Include="BearerTokenCredentials.cs" />
+    <Compile Include="Auth\OAuthTokenExchangeResult.cs" />
     <Compile Include="DribbbleClient.cs" />
     <Compile Include="IDribbbleClient.cs" />
     <Compile Include="Models\Comment.cs" />

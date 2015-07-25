@@ -6,12 +6,15 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
+using Rebbound.Auth;
 
 namespace Rebbound
 {
     public class DribbbleClient : IDribbbleClient
     {
         private const string ApiBase = "https://api.dribbble.com/v1";
+
+        private const string OAuthTokenEndpoint = "https://dribbble.com/oauth/token";
 
         private const string UsersEndpoint = "/users/{0}";
 
@@ -23,25 +26,42 @@ namespace Rebbound
 
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
 
-        private BaseCredentials credentials;
+        public string AccessToken { get; set; }
 
         public DribbbleClient()
         {
         }
 
-        public DribbbleClient(BaseCredentials credentials)
+        public async Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri)
         {
-            this.credentials = credentials;
+            HttpClient client = new HttpClient();
+
+            Dictionary<string, string> postParameters = new Dictionary<string,string>();
+            postParameters.Add("code", code);
+            postParameters.Add("client_id", clientId);
+            postParameters.Add("client_secret", clientSecret);
+            postParameters.Add("redirect_uri", redirectUri);
+
+            FormUrlEncodedContent postContent = new FormUrlEncodedContent(postParameters);
+
+            // TODO: check for valid POST response
+            var result = await client.PostAsync(OAuthTokenEndpoint, postContent);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(await result.Content.ReadAsStringAsync()))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<OAuthTokenExchangeResult>(jsonReader);
+                }
+            }
         }
 
         public async Task<User> GetUserAsync(int userId)
         {
             HttpClient client = new HttpClient();
-
-            foreach (var header in this.credentials.ToHttpHeaders())
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            this.AddAuthorizationHeader(client);
 
             var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UsersEndpoint, userId))).ConfigureAwait(false);
 
@@ -59,11 +79,7 @@ namespace Rebbound
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
             HttpClient client = new HttpClient();
-
-            foreach (var header in this.credentials.ToHttpHeaders())
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            this.AddAuthorizationHeader(client);
 
             var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UserShotsEndpoint, userId))).ConfigureAwait(false);
 
@@ -81,11 +97,7 @@ namespace Rebbound
         public async Task<Shot> GetShotAsync(int shotId)
         {
             HttpClient client = new HttpClient();
-
-            foreach (var header in this.credentials.ToHttpHeaders())
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            this.AddAuthorizationHeader(client);
 
             var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotsEndpoint, shotId))).ConfigureAwait(false);
 
@@ -103,11 +115,7 @@ namespace Rebbound
         public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
         {
             HttpClient client = new HttpClient();
-
-            foreach (var header in this.credentials.ToHttpHeaders())
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            this.AddAuthorizationHeader(client);
 
             var result = await client.GetStreamAsync(string.Format(ShotPaletteEndpoint, shotId)).ConfigureAwait(false);
 
@@ -178,11 +186,7 @@ namespace Rebbound
         public async Task<List<Comment>> GetShotCommentsAsync(int shotId)
         {
             HttpClient client = new HttpClient();
-
-            foreach (var header in this.credentials.ToHttpHeaders())
-            {
-                client.DefaultRequestHeaders.Add(header.Key, header.Value);
-            }
+            this.AddAuthorizationHeader(client);
 
             var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
 
@@ -194,6 +198,14 @@ namespace Rebbound
                 {
                     return serializer.Deserialize<List<Comment>>(jsonReader);
                 }
+            }
+        }
+
+        private void AddAuthorizationHeader(HttpClient client)
+        {
+            if (!string.IsNullOrEmpty(this.AccessToken))
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.AccessToken);
             }
         }
     }
