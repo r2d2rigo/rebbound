@@ -13,24 +13,24 @@ namespace Rebbound.Models
     public class User
     {
         [JsonProperty("id")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         [JsonProperty("username")]
-        public string Username { get; private set; }
+        public string Username { get; set; }
 
         // public string html_url { get; set; }
 
         [JsonProperty("avatar_url")]
-        public string AvatarUrl { get; private set; }
+        public string AvatarUrl { get; set; }
 
         [JsonProperty("bio")]
-        public string Bio { get; private set; }
+        public string Bio { get; set; }
 
         [JsonProperty("location")]
-        public string Location { get; private set; }
+        public string Location { get; set; }
 
         //public Links links { get; set; }
         //public int buckets_count { get; set; }

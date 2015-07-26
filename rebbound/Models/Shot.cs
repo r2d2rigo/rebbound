@@ -11,9 +11,11 @@ namespace Rebbound.Models
     public class Shot
     {
         [JsonProperty("id")]
-        public int Id { get; private set; }
+        public int Id { get; set; }
+
         [JsonProperty("title")]
         public string Title { get; set; }
+
         [JsonProperty("description")]
         public string Description { get; set; }
 
@@ -42,6 +44,10 @@ namespace Rebbound.Models
         //public string projects_url { get; set; }
         //public string rebounds_url { get; set; }
         //public string[] tags { get; set; }
+
+        [JsonProperty("user")]
+        public User User { get; set; }
+
         //public Team team { get; set; }
     }
 

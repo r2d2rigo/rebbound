@@ -11,12 +11,12 @@ namespace Rebbound.Models
     public class ShotImages
     {
         [JsonProperty("hidpi")]
-        public string HiDpi { get; private set; }
+        public string HiDpi { get; set; }
 
         [JsonProperty("normal")]
-        public string Normal { get; private set; }
+        public string Normal { get; set; }
 
         [JsonProperty("teaser")]
-        public string Teaser { get; private set; }
+        public string Teaser { get; set; }
     }
 }
