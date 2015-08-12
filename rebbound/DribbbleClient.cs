@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Rebbound.Auth;
+using System.Xml.Linq;
 
 namespace Rebbound
 {
@@ -16,11 +17,13 @@ namespace Rebbound
 
         private const string OAuthTokenEndpoint = "https://dribbble.com/oauth/token";
 
+        private const string UserFollowingShotsEndpoint = "/user/following/shots";
+
         private const string UsersEndpoint = "/users/{0}";
 
         private const string UserShotsEndpoint = "/users/{0}/shots";
 
-        private const string ShotsEndpoint = "/shots/";
+        private const string ShotsEndpoint = "/shots/{0}";
 
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
@@ -60,10 +63,15 @@ namespace Rebbound
 
         public async Task<User> GetUserAsync(int userId)
         {
+            return await this.GetUserAsync(userId.ToString());
+        }
+
+        public async Task<User> GetUserAsync(string username)
+        {
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UsersEndpoint, userId))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UsersEndpoint, username))).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -75,7 +83,6 @@ namespace Rebbound
                 }
             }
         }
-
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
             HttpClient client = new HttpClient();
@@ -99,7 +106,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, ShotsEndpoint + shotId.ToString())).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotsEndpoint, shotId))).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -112,13 +119,12 @@ namespace Rebbound
             }
         }
 
-        public async Task<List<Shot>> GetShotsAsync(ShotSortMode sortMode)
+        public async Task<List<Shot>> GetFollowingShotsAsync()
         {
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var uri = string.Join(string.Empty, ApiBase, ShotsEndpoint);
-            uri = uri + "?sort=" + sortMode.ToString().ToLower();
+            var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
 
             var result = await client.GetStringAsync(uri).ConfigureAwait(false);
 
@@ -132,7 +138,6 @@ namespace Rebbound
                 }
             }
         }
-
 
         public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
         {

@@ -12,10 +12,11 @@ namespace Rebbound
         Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri);
 
         Task<User> GetUserAsync(int userId);
+        Task<User> GetUserAsync(string username);
         Task<List<Shot>> GetUserShotsAsync(int userId);
+        Task<List<Shot>> GetFollowingShotsAsync();
 
         Task<Shot> GetShotAsync(int shotId);
-        Task<List<Shot>> GetShotsAsync(ShotSortMode sortMode);
         Task<List<RgbColor>> GetShotPaletteAsync(int shotId);
         Task<List<Comment>> GetShotCommentsAsync(int shotId);
     }
