@@ -43,7 +43,8 @@ namespace Rebbound.Models
         //public string likes_url { get; set; }
         //public string projects_url { get; set; }
         //public string rebounds_url { get; set; }
-        //public string[] tags { get; set; }
+        [JsonProperty("tags")]
+        public List<string> Tags { get; set; }
 
         [JsonProperty("user")]
         public User User { get; set; }

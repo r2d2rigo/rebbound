@@ -20,7 +20,7 @@ namespace Rebbound.Tests
         }
 
         [TestMethod]
-        public async Task TestGetUserAsync()
+        public async Task TestGetUserByIdAsync()
         {
             var user = await dribbbleService.GetUserAsync(1);
 
@@ -30,12 +30,38 @@ namespace Rebbound.Tests
             Assert.IsFalse(string.IsNullOrEmpty(user.Bio));
             Assert.IsFalse(string.IsNullOrEmpty(user.AvatarUrl));
             Assert.IsFalse(string.IsNullOrEmpty(user.Location));
+            Assert.IsTrue(user.FollowersCount > 0);
+            Assert.IsTrue(user.FollowingsCount > 0);
+        }
+
+        [TestMethod]
+        public async Task TestGetUserByUsernameAsync()
+        {
+            var user = await dribbbleService.GetUserAsync("simplebits");
+
+            Assert.AreEqual(1, user.Id);
+            Assert.AreEqual("simplebits", user.Username);
+            Assert.IsFalse(string.IsNullOrEmpty(user.Name));
+            Assert.IsFalse(string.IsNullOrEmpty(user.Bio));
+            Assert.IsFalse(string.IsNullOrEmpty(user.AvatarUrl));
+            Assert.IsFalse(string.IsNullOrEmpty(user.Location));
+            Assert.IsTrue(user.FollowersCount > 0);
+            Assert.IsTrue(user.FollowingsCount > 0);
         }
 
         [TestMethod]
         public async Task TestGetUserShotsAsync()
         {
             var shots = await dribbbleService.GetUserShotsAsync(1);
+
+            Assert.IsNotNull(shots);
+            Assert.IsTrue(shots.Count > 0);
+        }
+
+        [TestMethod]
+        public async Task TestGetFollowingShotsAsync()
+        {
+            var shots = await dribbbleService.GetFollowingShotsAsync();
 
             Assert.IsNotNull(shots);
             Assert.IsTrue(shots.Count > 0);

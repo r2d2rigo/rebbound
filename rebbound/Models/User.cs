@@ -35,8 +35,13 @@ namespace Rebbound.Models
         //public Links links { get; set; }
         //public int buckets_count { get; set; }
         //public int comments_received_count { get; set; }
-        //public int followers_count { get; set; }
-        //public int followings_count { get; set; }
+
+        [JsonProperty("followers_count")]
+        public int FollowersCount { get; set; }
+
+        [JsonProperty("followings_count")]
+        public int FollowingsCount { get; set; }
+
         //public int likes_count { get; set; }
         //public int likes_received_count { get; set; }
         //public int projects_count { get; set; }
