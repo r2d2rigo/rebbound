@@ -32,6 +32,10 @@ namespace Rebbound.Tests
             Assert.IsFalse(string.IsNullOrEmpty(user.Location));
             Assert.IsTrue(user.FollowersCount > 0);
             Assert.IsTrue(user.FollowingsCount > 0);
+
+            Assert.IsNotNull(user.Links);
+            Assert.IsFalse(string.IsNullOrEmpty(user.Links.Web));
+            Assert.IsFalse(string.IsNullOrEmpty(user.Links.Twitter));
         }
 
         [TestMethod]
@@ -47,6 +51,10 @@ namespace Rebbound.Tests
             Assert.IsFalse(string.IsNullOrEmpty(user.Location));
             Assert.IsTrue(user.FollowersCount > 0);
             Assert.IsTrue(user.FollowingsCount > 0);
+
+            Assert.IsNotNull(user.Links);
+            Assert.IsFalse(string.IsNullOrEmpty(user.Links.Web));
+            Assert.IsFalse(string.IsNullOrEmpty(user.Links.Twitter));
         }
 
         [TestMethod]

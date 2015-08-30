@@ -32,7 +32,9 @@ namespace Rebbound.Models
         [JsonProperty("location")]
         public string Location { get; set; }
 
-        //public Links links { get; set; }
+        [JsonProperty("links")]
+        public UserLinks Links { get; set; }
+
         //public int buckets_count { get; set; }
         //public int comments_received_count { get; set; }
 

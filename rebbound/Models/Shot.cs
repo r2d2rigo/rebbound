@@ -28,13 +28,22 @@ namespace Rebbound.Models
         [JsonProperty("images")]
         public ShotImages Images { get; set; }
 
-        //public int views_count { get; set; }
-        //public int likes_count { get; set; }
-        //public int comments_count { get; set; }
+        [JsonProperty("views_count")]
+        public int ViewsCount { get; set; }
+
+        [JsonProperty("likes_count")]
+        public int LikesCount { get; set; }
+
+        [JsonProperty("comments_count")]
+        public int CommentsCount { get; set; }
         //public int attachments_count { get; set; }
         //public int rebounds_count { get; set; }
-        //public int buckets_count { get; set; }
-        //public DateTime created_at { get; set; }
+
+        [JsonProperty("buckets_count")]
+        public int BucketsCount { get; set; }
+
+        [JsonProperty("created_at")]
+        public DateTime CreatedAt { get; set; }
         //public DateTime updated_at { get; set; }
         //public string html_url { get; set; }
         //public string attachments_url { get; set; }
@@ -51,13 +60,6 @@ namespace Rebbound.Models
 
         //public Team team { get; set; }
     }
-
-    //public class Images
-    //{
-    //    public object hidpi { get; set; }
-    //    public string normal { get; set; }
-    //    public string teaser { get; set; }
-    //}
 
     //public class Team
     //{
@@ -91,11 +93,5 @@ namespace Rebbound.Models
     //    public string team_shots_url { get; set; }
     //    public DateTime created_at { get; set; }
     //    public DateTime updated_at { get; set; }
-    //}
-
-    //public class Links
-    //{
-    //    public string web { get; set; }
-    //    public string twitter { get; set; }
     //}
 }

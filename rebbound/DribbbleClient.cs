@@ -17,6 +17,8 @@ namespace Rebbound
 
         private const string OAuthTokenEndpoint = "https://dribbble.com/oauth/token";
 
+        private const string UserAuthenticatedEndpoint = "/user";
+
         private const string UserFollowingShotsEndpoint = "/user/following/shots";
 
         private const string UsersEndpoint = "/users/{0}";
@@ -39,7 +41,7 @@ namespace Rebbound
         {
             HttpClient client = new HttpClient();
 
-            Dictionary<string, string> postParameters = new Dictionary<string,string>();
+            Dictionary<string, string> postParameters = new Dictionary<string, string>();
             postParameters.Add("code", code);
             postParameters.Add("client_id", clientId);
             postParameters.Add("client_secret", clientSecret);
@@ -83,6 +85,25 @@ namespace Rebbound
                 }
             }
         }
+
+        public async Task<User> GetAuthenticatedUserAsync()
+        {
+            HttpClient client = new HttpClient();
+            this.AddAuthorizationHeader(client);
+
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(result))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<User>(jsonReader);
+                }
+            }
+        }
+
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
             HttpClient client = new HttpClient();
