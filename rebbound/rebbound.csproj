@@ -41,10 +41,11 @@
     <Compile Include="Models\RgbColor.cs" />
     <Compile Include="Models\Shot.cs" />
     <Compile Include="Models\ShotImages.cs" />
+    <Compile Include="Models\ShotsSortMode.cs" />
+    <Compile Include="Models\ShotsSearchFilter.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserLinks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShotSortMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

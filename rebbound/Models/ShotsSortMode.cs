@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rebbound
+namespace Rebbound.Models
 {
-    public enum ShotSortMode
+    public enum ShotsSortMode
     {
         Comments,
         Recent,

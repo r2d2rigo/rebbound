@@ -25,7 +25,7 @@ namespace Rebbound
 
         private const string UserShotsEndpoint = "/users/{0}/shots";
 
-        private const string ShotsEndpoint = "/shots/{0}";
+        private const string ShotsEndpoint = "shots";
 
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
@@ -104,6 +104,79 @@ namespace Rebbound
             }
         }
 
+        public Task<List<Shot>> GetShotsAsync()
+        {
+            return GetShotsAsync(ShotsSearchFilter.All);
+        }
+
+        public Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter)
+        {
+            return GetShotsAsync(filter, ShotsSortMode.Views);
+        }
+
+        public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode)
+        {
+            HttpClient client = new HttpClient();
+            this.AddAuthorizationHeader(client);
+
+            var listParameter = "list=";
+
+            switch (filter)
+            {
+                default:
+                case ShotsSearchFilter.All:
+                    listParameter += string.Empty;
+                    break;
+                case ShotsSearchFilter.Animated:
+                    listParameter += "animated";
+                    break;
+                case ShotsSearchFilter.Attachments:
+                    listParameter += "attachments";
+                    break;
+                case ShotsSearchFilter.Debuts:
+                    listParameter += "debuts";
+                    break;
+                case ShotsSearchFilter.Playoffs:
+                    listParameter += "playoffs";
+                    break;
+                case ShotsSearchFilter.Rebounds:
+                    listParameter += "rebounds";
+                    break;
+                case ShotsSearchFilter.Teams:
+                    listParameter += "teams";
+                    break;
+            }
+
+            var sortParameter = "sort=";
+
+            switch (sortMode)
+            {
+                case ShotsSortMode.Comments:
+                    sortParameter += "comments";
+                    break;
+                case ShotsSortMode.Recent:
+                    sortParameter += "recent";
+                    break;
+                default:
+                case ShotsSortMode.Views:
+                    sortParameter += "views";
+                    break;
+            }
+
+            var result = await client.GetStringAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(result))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<List<Shot>>(jsonReader);
+                }
+            }
+        }
+
+
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
             HttpClient client = new HttpClient();
@@ -127,7 +200,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Join("/", ShotsEndpoint, shotId))).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 

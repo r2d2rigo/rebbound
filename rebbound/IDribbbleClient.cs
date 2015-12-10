@@ -15,7 +15,9 @@ namespace Rebbound
         Task<User> GetUserAsync(string username);
         Task<User> GetAuthenticatedUserAsync();
         Task<List<Shot>> GetUserShotsAsync(int userId);
+
         Task<List<Shot>> GetFollowingShotsAsync();
+        Task<List<Shot>> GetShotsAsync();
 
         Task<Shot> GetShotAsync(int shotId);
         Task<List<RgbColor>> GetShotPaletteAsync(int shotId);
