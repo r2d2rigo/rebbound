@@ -21,9 +21,7 @@ namespace Rebbound
 
         private const string UserFollowingShotsEndpoint = "/user/following/shots";
 
-        private const string UsersEndpoint = "/users/{0}";
-
-        private const string UserShotsEndpoint = "/users/{0}/shots";
+        private const string UsersEndpoint = "users";
 
         private const string ShotsEndpoint = "shots";
 
@@ -73,7 +71,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UsersEndpoint, username))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -182,7 +180,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(UserShotsEndpoint, userId))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
@@ -200,7 +198,7 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Join("/", ShotsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await client.GetStringAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
 
             JsonSerializer serializer = new JsonSerializer();
 
