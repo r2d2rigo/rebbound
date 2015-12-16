@@ -38,6 +38,7 @@
     <Compile Include="DribbbleClient.cs" />
     <Compile Include="IDribbbleClient.cs" />
     <Compile Include="Models\Comment.cs" />
+    <Compile Include="Models\Like.cs" />
     <Compile Include="Models\RgbColor.cs" />
     <Compile Include="Models\Shot.cs" />
     <Compile Include="Models\ShotImages.cs" />

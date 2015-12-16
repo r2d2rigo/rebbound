@@ -25,6 +25,8 @@ namespace Rebbound
 
         private const string ShotsEndpoint = "shots";
 
+        private const string LikesEndpoint = "likes";
+
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
@@ -189,6 +191,24 @@ namespace Rebbound
                 using (JsonTextReader jsonReader = new JsonTextReader(reader))
                 {
                     return serializer.Deserialize<List<Shot>>(jsonReader);
+                }
+            }
+        }
+
+        public async Task<List<Like>> GetUserLikesAsync(int userId)
+        {
+            HttpClient client = new HttpClient();
+            this.AddAuthorizationHeader(client);
+
+            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
+
+            JsonSerializer serializer = new JsonSerializer();
+
+            using (StringReader reader = new StringReader(result))
+            {
+                using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                {
+                    return serializer.Deserialize<List<Like>>(jsonReader);
                 }
             }
         }
