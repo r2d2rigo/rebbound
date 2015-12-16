@@ -9,6 +9,10 @@ namespace Rebbound
     {
         string AccessToken { get; set; }
 
+        int RateLimit { get; }
+
+        int RemainingRequests { get; }
+
         Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri);
 
         Task<User> GetUserAsync(int userId);

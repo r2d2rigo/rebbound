@@ -31,7 +31,23 @@ namespace Rebbound
 
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
 
+        private const string RateLimitHeader = "X-RateLimit-Limit";
+
+        private const string RateLimitRemainingHeader = "X-RateLimit-Remaining";
+
         public string AccessToken { get; set; }
+
+        public int RateLimit
+        {
+            get;
+            private set;
+        }
+
+        public int RemainingRequests
+        {
+            get;
+            private set;
+        }
 
         public DribbbleClient()
         {
@@ -51,6 +67,7 @@ namespace Rebbound
 
             // TODO: check for valid POST response
             var result = await client.PostAsync(OAuthTokenEndpoint, postContent);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<OAuthTokenExchangeResult>(result.Content);
         }
@@ -66,6 +83,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
@@ -76,6 +94,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
@@ -140,6 +159,7 @@ namespace Rebbound
             }
 
             var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
@@ -151,6 +171,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
@@ -161,6 +182,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Like>>(result.Content);
         }
@@ -171,6 +193,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
         }
@@ -183,6 +206,7 @@ namespace Rebbound
             var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
 
             var result = await client.GetAsync(uri).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
@@ -264,6 +288,7 @@ namespace Rebbound
             this.AddAuthorizationHeader(client);
 
             var result = await client.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
         }
@@ -289,6 +314,19 @@ namespace Rebbound
                         return serializer.Deserialize<T>(jsonReader);
                     }
                 }
+            }
+        }
+
+        private void UpdateRequestLimits(HttpResponseMessage response)
+        {
+            if (response.Headers.Contains(RateLimitHeader))
+            {
+                this.RateLimit = int.Parse(response.Headers.GetValues(RateLimitHeader).First());
+            }
+
+            if (response.Headers.Contains(RateLimitRemainingHeader))
+            {
+                this.RemainingRequests = int.Parse(response.Headers.GetValues(RateLimitRemainingHeader).First());
             }
         }
     }
