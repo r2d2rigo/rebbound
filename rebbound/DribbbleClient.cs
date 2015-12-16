@@ -52,20 +52,12 @@ namespace Rebbound
             // TODO: check for valid POST response
             var result = await client.PostAsync(OAuthTokenEndpoint, postContent);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(await result.Content.ReadAsStringAsync()))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<OAuthTokenExchangeResult>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<OAuthTokenExchangeResult>(result.Content);
         }
 
-        public async Task<User> GetUserAsync(int userId)
+        public Task<User> GetUserAsync(int userId)
         {
-            return await this.GetUserAsync(userId.ToString());
+            return this.GetUserAsync(userId.ToString());
         }
 
         public async Task<User> GetUserAsync(string username)
@@ -73,17 +65,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<User>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
 
         public async Task<User> GetAuthenticatedUserAsync()
@@ -91,17 +75,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<User>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
 
         public Task<List<Shot>> GetShotsAsync()
@@ -163,17 +139,9 @@ namespace Rebbound
                     break;
             }
 
-            var result = await client.GetStringAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<List<Shot>>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
 
@@ -182,17 +150,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<List<Shot>>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
         public async Task<List<Like>> GetUserLikesAsync(int userId)
@@ -200,17 +160,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<List<Like>>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<List<Like>>(result.Content);
         }
 
         public async Task<Shot> GetShotAsync(int shotId)
@@ -218,17 +170,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<Shot>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
         }
 
         public async Task<List<Shot>> GetFollowingShotsAsync()
@@ -238,17 +182,9 @@ namespace Rebbound
 
             var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
 
-            var result = await client.GetStringAsync(uri).ConfigureAwait(false);
+            var result = await client.GetAsync(uri).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<List<Shot>>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
         public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
@@ -327,17 +263,9 @@ namespace Rebbound
             HttpClient client = new HttpClient();
             this.AddAuthorizationHeader(client);
 
-            var result = await client.GetStringAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await client.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
 
-            JsonSerializer serializer = new JsonSerializer();
-
-            using (StringReader reader = new StringReader(result))
-            {
-                using (JsonTextReader jsonReader = new JsonTextReader(reader))
-                {
-                    return serializer.Deserialize<List<Comment>>(jsonReader);
-                }
-            }
+            return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
         }
 
         private void AddAuthorizationHeader(HttpClient client)
@@ -345,6 +273,22 @@ namespace Rebbound
             if (!string.IsNullOrEmpty(this.AccessToken))
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.AccessToken);
+            }
+        }
+
+        private async Task<T> DeserializeFromResponseContentAsync<T>(HttpContent content)
+        {
+            using (var contentStream = await content.ReadAsStreamAsync())
+            {
+                using (StreamReader reader = new StreamReader(contentStream))
+                {
+                    using (JsonTextReader jsonReader = new JsonTextReader(reader))
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+
+                        return serializer.Deserialize<T>(jsonReader);
+                    }
+                }
             }
         }
     }
