@@ -35,7 +35,29 @@ namespace Rebbound
 
         private const string RateLimitRemainingHeader = "X-RateLimit-Remaining";
 
-        public string AccessToken { get; set; }
+        private HttpClient httpClient;
+
+        private string accessToken;
+        public string AccessToken
+        {
+            get
+            {
+                return this.accessToken;
+            }
+            set
+            {
+                if (this.accessToken != value)
+                {
+                    this.accessToken = value;
+
+                    if (!string.IsNullOrWhiteSpace(this.accessToken))
+                    {
+                        this.httpClient.DefaultRequestHeaders.Remove("Authorization");
+                        this.httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+                    }
+                }
+            }
+        }
 
         public int RateLimit
         {
@@ -51,12 +73,11 @@ namespace Rebbound
 
         public DribbbleClient()
         {
+            this.httpClient = new HttpClient();
         }
 
         public async Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri)
         {
-            HttpClient client = new HttpClient();
-
             Dictionary<string, string> postParameters = new Dictionary<string, string>();
             postParameters.Add("code", code);
             postParameters.Add("client_id", clientId);
@@ -66,7 +87,7 @@ namespace Rebbound
             FormUrlEncodedContent postContent = new FormUrlEncodedContent(postParameters);
 
             // TODO: check for valid POST response
-            var result = await client.PostAsync(OAuthTokenEndpoint, postContent);
+            var result = await this.httpClient.PostAsync(OAuthTokenEndpoint, postContent);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<OAuthTokenExchangeResult>(result.Content);
@@ -79,10 +100,7 @@ namespace Rebbound
 
         public async Task<User> GetUserAsync(string username)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -90,10 +108,7 @@ namespace Rebbound
 
         public async Task<User> GetAuthenticatedUserAsync()
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -111,9 +126,6 @@ namespace Rebbound
 
         public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
             var listParameter = "list=";
 
             switch (filter)
@@ -158,7 +170,7 @@ namespace Rebbound
                     break;
             }
 
-            var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -167,10 +179,7 @@ namespace Rebbound
 
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -178,10 +187,7 @@ namespace Rebbound
 
         public async Task<List<Like>> GetUserLikesAsync(int userId)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Like>>(result.Content);
@@ -189,10 +195,7 @@ namespace Rebbound
 
         public async Task<Shot> GetShotAsync(int shotId)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
@@ -200,12 +203,9 @@ namespace Rebbound
 
         public async Task<List<Shot>> GetFollowingShotsAsync()
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
             var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
 
-            var result = await client.GetAsync(uri).ConfigureAwait(false);
+            var result = await this.GetAsync(uri).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -213,10 +213,7 @@ namespace Rebbound
 
         public async Task<List<RgbColor>> GetShotPaletteAsync(int shotId)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetStreamAsync(string.Format(ShotPaletteEndpoint, shotId)).ConfigureAwait(false);
+            var result = await this.httpClient.GetStreamAsync(string.Format(ShotPaletteEndpoint, shotId)).ConfigureAwait(false);
 
             var palette = new List<RgbColor>();
 
@@ -284,21 +281,10 @@ namespace Rebbound
 
         public async Task<List<Comment>> GetShotCommentsAsync(int shotId)
         {
-            HttpClient client = new HttpClient();
-            this.AddAuthorizationHeader(client);
-
-            var result = await client.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
-        }
-
-        private void AddAuthorizationHeader(HttpClient client)
-        {
-            if (!string.IsNullOrEmpty(this.AccessToken))
-            {
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.AccessToken);
-            }
         }
 
         private async Task<T> DeserializeFromResponseContentAsync<T>(HttpContent content)
@@ -328,6 +314,11 @@ namespace Rebbound
             {
                 this.RemainingRequests = int.Parse(response.Headers.GetValues(RateLimitRemainingHeader).First());
             }
+        }
+
+        private Task<HttpResponseMessage> GetAsync(string uri)
+        {
+            return this.httpClient.GetAsync(uri);
         }
     }
 }
