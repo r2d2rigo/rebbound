@@ -1,4 +1,5 @@
 ﻿using Rebbound.Auth;
+using Rebbound.Cache;
 using Rebbound.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +13,8 @@ namespace Rebbound
         int RateLimit { get; }
 
         int RemainingRequests { get; }
+
+        ICachedHttpClient HttpCache { get; }
 
         Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri);
 

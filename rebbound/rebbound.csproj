@@ -35,6 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Auth\OAuthTokenExchangeResult.cs" />
+    <Compile Include="Cache\ICachedHttpClient.cs" />
+    <Compile Include="Cache\InMemoryCachedHttpClient.cs" />
     <Compile Include="DribbbleClient.cs" />
     <Compile Include="IDribbbleClient.cs" />
     <Compile Include="Models\Comment.cs" />

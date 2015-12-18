@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Rebbound.Auth;
 using System.Xml.Linq;
+using Rebbound.Cache;
 
 namespace Rebbound
 {
@@ -52,6 +53,12 @@ namespace Rebbound
 
                     if (!string.IsNullOrWhiteSpace(this.accessToken))
                     {
+                        if (this.HttpCache != null)
+                        {
+                            this.HttpCache.DefaultRequestHeaders.Remove("Authorization");
+                            this.HttpCache.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
+                        }
+
                         this.httpClient.DefaultRequestHeaders.Remove("Authorization");
                         this.httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + this.accessToken);
                     }
@@ -71,9 +78,19 @@ namespace Rebbound
             private set;
         }
 
-        public DribbbleClient()
+        public ICachedHttpClient HttpCache
+        {
+            get;
+        }
+
+        public DribbbleClient() : this(null)
+        {
+        }
+
+        public DribbbleClient(ICachedHttpClient cache)
         {
             this.httpClient = new HttpClient();
+            this.HttpCache = cache;
         }
 
         public async Task<OAuthTokenExchangeResult> ExchangeCodeForAccessTokenAsync(string code, string clientId, string clientSecret, string redirectUri)
@@ -318,6 +335,11 @@ namespace Rebbound
 
         private Task<HttpResponseMessage> GetAsync(string uri)
         {
+            if (this.HttpCache != null)
+            {
+                return this.HttpCache.GetAsync(uri);
+            }
+
             return this.httpClient.GetAsync(uri);
         }
     }
