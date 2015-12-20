@@ -49,10 +49,10 @@ namespace Rebbound.Tests
         public async Task TestCachedGetUserAsync()
         {
             var originalUser = await cachedDribbbleService.GetUserAsync(1);
-            int remainingStart = dribbbleService.RemainingRequests;
+            int remainingStart = cachedDribbbleService.RemainingRequests;
 
             var cachedUser = await cachedDribbbleService.GetUserAsync(1);
-            int remainingEnd = dribbbleService.RemainingRequests;
+            int remainingEnd = cachedDribbbleService.RemainingRequests;
 
             Assert.AreEqual(remainingStart, remainingEnd);
         }

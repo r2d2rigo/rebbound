@@ -44,10 +44,10 @@ namespace Rebbound.Cache
 
             if (response.StatusCode == HttpStatusCode.NotModified)
             {
-                var cachedResponse = new HttpResponseMessage(HttpStatusCode.OK);
-                cachedResponse.Content = new StringContent(this.responseCache[uri]);
+                response.StatusCode = HttpStatusCode.OK;
+                response.Content = new StringContent(this.responseCache[uri]);
 
-                return cachedResponse;
+                return response;
             }
 
             this.responseCache[uri] = await response.Content.ReadAsStringAsync();
