@@ -13,14 +13,13 @@ namespace Rebbound.Cache
     {
         private HttpClient client;
 
-        private Dictionary<Uri, string> responseCache;
-        private Dictionary<Uri, string> eTagCache;
+        private Dictionary<Uri, CacheEntry> cache;
 
         public HttpRequestHeaders DefaultRequestHeaders
         {
             get
             {
-                return this.client.DefaultRequestHeaders;
+                return this.client.DefaultRequestHeaders;   
             }
         }
 
@@ -31,40 +30,67 @@ namespace Rebbound.Cache
             this.ResetCache();
         }
 
-        public async Task<HttpResponseMessage> GetAsync(Uri uri)
+        public async Task<HttpResponseMessage> GetAsync(Uri uri, TimeSpan cacheDuration)
         {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri);
 
-            if (this.eTagCache.ContainsKey(uri))
+            if (this.cache.ContainsKey(uri))
             {
-                request.Headers.Add("If-None-Match", this.eTagCache[uri]);
+                var entry = this.cache[uri];
+
+                if (entry.ExpirationDate > DateTime.UtcNow)
+                {
+                    var cachedResponse = new HttpResponseMessage(HttpStatusCode.OK);
+                    cachedResponse.Content = new StringContent(entry.ResponseContent);
+
+                    return cachedResponse;
+                }
+                else
+                {
+                    request.Headers.Add("If-None-Match", entry.ETag);
+
+                    var cachedResponse = await client.SendAsync(request);
+
+                    if (cachedResponse.StatusCode == HttpStatusCode.NotModified)
+                    {
+                        cachedResponse.StatusCode = HttpStatusCode.OK;
+                        cachedResponse.Content = new StringContent(entry.ResponseContent);
+
+                        return cachedResponse;
+                    }
+                    else
+                    {
+                        entry.ETag = cachedResponse.Headers.GetValues("ETag").First();
+                        entry.ResponseContent = await cachedResponse.Content.ReadAsStringAsync();
+                        entry.ExpirationDate = DateTime.UtcNow + cacheDuration;
+
+                        this.cache[uri] = entry;
+
+                        return cachedResponse;
+                    }
+                }
             }
 
             var response = await client.SendAsync(request);
 
-            if (response.StatusCode == HttpStatusCode.NotModified)
-            {
-                response.StatusCode = HttpStatusCode.OK;
-                response.Content = new StringContent(this.responseCache[uri]);
+            var cacheEntry = new CacheEntry();
+            cacheEntry.ResponseContent = await response.Content.ReadAsStringAsync();
+            cacheEntry.ETag = response.Headers.GetValues("ETag").First();
+            cacheEntry.ExpirationDate = DateTime.UtcNow + cacheDuration;
 
-                return response;
-            }
-
-            this.responseCache[uri] = await response.Content.ReadAsStringAsync();
-            this.eTagCache[uri] = response.Headers.GetValues("ETag").First();
+            this.cache[uri] = cacheEntry;
 
             return response;
         }
 
-        public Task<HttpResponseMessage> GetAsync(string uri)
+        public Task<HttpResponseMessage> GetAsync(string uri, TimeSpan cacheDuration)
         {
-            return GetAsync(new Uri(uri));
+            return GetAsync(new Uri(uri), cacheDuration);
         }
 
         public void ResetCache()
         {
-            this.responseCache = new Dictionary<Uri, string>();
-            this.eTagCache = new Dictionary<Uri, string>();
+            this.cache = new Dictionary<Uri, CacheEntry>();
         }
     }
 }

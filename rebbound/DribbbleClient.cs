@@ -36,6 +36,10 @@ namespace Rebbound
 
         private const string RateLimitRemainingHeader = "X-RateLimit-Remaining";
 
+        private const double ShotCacheDurationInSeconds = 60;
+
+        private const double UserCacheDurationInSeconds = 300;
+
         private HttpClient httpClient;
 
         private string accessToken;
@@ -117,7 +121,7 @@ namespace Rebbound
 
         public async Task<User> GetUserAsync(string username)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, username), TimeSpan.FromSeconds(UserCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -125,7 +129,7 @@ namespace Rebbound
 
         public async Task<User> GetAuthenticatedUserAsync()
         {
-            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint), TimeSpan.Zero).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -187,7 +191,7 @@ namespace Rebbound
                     break;
             }
 
-            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter)), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -196,7 +200,7 @@ namespace Rebbound
 
         public async Task<List<Shot>> GetUserShotsAsync(int userId)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -204,7 +208,7 @@ namespace Rebbound
 
         public async Task<List<Like>> GetUserLikesAsync(int userId)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint), TimeSpan.FromSeconds(UserCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Like>>(result.Content);
@@ -212,7 +216,7 @@ namespace Rebbound
 
         public async Task<Shot> GetShotAsync(int shotId)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
@@ -222,7 +226,7 @@ namespace Rebbound
         {
             var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
 
-            var result = await this.GetAsync(uri).ConfigureAwait(false);
+            var result = await this.GetAsync(uri, TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -298,7 +302,7 @@ namespace Rebbound
 
         public async Task<List<Comment>> GetShotCommentsAsync(int shotId)
         {
-            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId))).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId)), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
@@ -333,11 +337,11 @@ namespace Rebbound
             }
         }
 
-        private Task<HttpResponseMessage> GetAsync(string uri)
+        private Task<HttpResponseMessage> GetAsync(string uri, TimeSpan cacheDuration)
         {
             if (this.HttpCache != null)
             {
-                return this.HttpCache.GetAsync(uri);
+                return this.HttpCache.GetAsync(uri, cacheDuration);
             }
 
             return this.httpClient.GetAsync(uri);

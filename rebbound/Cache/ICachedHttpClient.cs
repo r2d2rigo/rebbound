@@ -9,9 +9,9 @@ namespace Rebbound.Cache
     {
         HttpRequestHeaders DefaultRequestHeaders { get; }
 
-        Task<HttpResponseMessage> GetAsync(string uri);
+        Task<HttpResponseMessage> GetAsync(string uri, TimeSpan cacheDuration);
 
-        Task<HttpResponseMessage> GetAsync(Uri uri);
+        Task<HttpResponseMessage> GetAsync(Uri uri, TimeSpan cacheDuration);
 
         void ResetCache();
     }
