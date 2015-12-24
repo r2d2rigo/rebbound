@@ -28,6 +28,8 @@ namespace Rebbound
 
         private const string LikesEndpoint = "likes";
 
+        private const string ProjectsEndpoint = "projects";
+
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
@@ -302,6 +304,22 @@ namespace Rebbound
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
+        }
+
+        public async Task<Project> GetProjectAsync(int projectId)
+        {
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            return await this.DeserializeFromResponseContentAsync<Project>(result.Content);
+        }
+
+        public async Task<List<Shot>> GetProjectShotsAsync(int projectId)
+        {
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId, ShotsEndpoint)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
         private async Task<T> DeserializeFromResponseContentAsync<T>(HttpContent content)
