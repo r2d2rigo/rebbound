@@ -26,7 +26,7 @@ namespace Rebbound
         Task<List<Shot>> GetUserShotsAsync(int userId, int page);
         Task<List<Like>> GetUserLikesAsync(int userId, int page);
 
-        Task<List<Shot>> GetFollowingShotsAsync();
+        Task<List<Shot>> GetFollowingShotsAsync(int page);
         Task<List<Shot>> GetShotsAsync();
 
         Task<Shot> GetShotAsync(int shotId);

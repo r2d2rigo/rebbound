@@ -18,7 +18,9 @@ namespace Rebbound
 
         private const string OAuthTokenEndpoint = "https://dribbble.com/oauth/token";
 
-        private const string UserAuthenticatedEndpoint = "/user";
+        private const string AuthenticatedUserEndpoint = "user";
+
+        private const string FollowingEndpoint = "following";
 
         private const string UserFollowingShotsEndpoint = "/user/following/shots";
 
@@ -138,7 +140,7 @@ namespace Rebbound
 
         public async Task<User> GetAuthenticatedUserAsync()
         {
-            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, AuthenticatedUserEndpoint)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -253,11 +255,20 @@ namespace Rebbound
             return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
         }
 
-        public async Task<List<Shot>> GetFollowingShotsAsync()
+        public async Task<List<Shot>> GetFollowingShotsAsync(int page)
         {
-            var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
-
-            var result = await this.GetAsync(uri).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        AuthenticatedUserEndpoint, FollowingEndpoint, ShotsEndpoint
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);

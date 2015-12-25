@@ -69,7 +69,7 @@ namespace Rebbound.Tests
         [TestMethod]
         public async Task TestGetFollowingShotsAsync()
         {
-            var shots = await dribbbleService.GetFollowingShotsAsync();
+            var shots = await dribbbleService.GetFollowingShotsAsync(1);
 
             Assert.IsNotNull(shots);
             Assert.IsTrue(shots.Count > 0);
