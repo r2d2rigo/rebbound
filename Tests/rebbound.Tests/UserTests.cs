@@ -60,7 +60,7 @@ namespace Rebbound.Tests
         [TestMethod]
         public async Task TestGetUserShotsAsync()
         {
-            var shots = await dribbbleService.GetUserShotsAsync(1);
+            var shots = await dribbbleService.GetUserShotsAsync(1, 1);
 
             Assert.IsNotNull(shots);
             Assert.IsTrue(shots.Count > 0);

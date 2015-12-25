@@ -21,7 +21,7 @@ namespace Rebbound.Tests
             dribbbleService = new DribbbleClient();
             dribbbleService.AccessToken = ConfigurationManager.AppSettings["BearerToken"];
 
-            cachedDribbbleService = new DribbbleClient(new InMemoryCachedHttpClient());
+            cachedDribbbleService = new DribbbleClient(10, new InMemoryCachedHttpClient());
             cachedDribbbleService.AccessToken = ConfigurationManager.AppSettings["BearerToken"];
         }
 
