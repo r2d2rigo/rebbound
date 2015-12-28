@@ -144,7 +144,7 @@ namespace Rebbound
 
         public async Task<User> GetAuthenticatedUserAsync()
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, AuthenticatedUserEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, AuthenticatedUserEndpoint), TimeSpan.Zero).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
@@ -218,7 +218,8 @@ namespace Rebbound
                         { "sort", sortParameter },
                         { "per_page", this.PageSize.ToString() },
                         { "page", page.ToString() }
-                    })
+                    }),
+                    TimeSpan.FromSeconds(ShotCacheDurationInSeconds)
                 ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
@@ -238,7 +239,8 @@ namespace Rebbound
                     {
                         { "per_page", this.PageSize.ToString() },
                         { "page", page.ToString() }
-                    })
+                    }),
+                    TimeSpan.FromSeconds(ShotCacheDurationInSeconds)
                 ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
@@ -254,10 +256,11 @@ namespace Rebbound
                         UsersEndpoint, userId.ToString(), LikesEndpoint
                     },
                     new Dictionary<string, string>()
-        {
+                    {
                         { "per_page", this.PageSize.ToString() },
                         { "page", page.ToString() }
-                    })
+                    }),
+                    TimeSpan.FromSeconds(ShotCacheDurationInSeconds)
                 ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
@@ -281,10 +284,11 @@ namespace Rebbound
                         AuthenticatedUserEndpoint, FollowingEndpoint, ShotsEndpoint
                     },
                     new Dictionary<string, string>()
-        {
+                    {
                         { "per_page", this.PageSize.ToString() },
                         { "page", page.ToString() }
-                    })
+                    }),
+                    TimeSpan.FromSeconds(ShotCacheDurationInSeconds)
                 ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
@@ -369,7 +373,7 @@ namespace Rebbound
 
         public async Task<Project> GetProjectAsync(int projectId)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<Project>(result.Content);
@@ -377,7 +381,7 @@ namespace Rebbound
 
         public async Task<List<Shot>> GetProjectShotsAsync(int projectId)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId, ShotsEndpoint)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId, ShotsEndpoint), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -414,10 +418,10 @@ namespace Rebbound
 
         private Task<HttpResponseMessage> GetAsync(string uri, TimeSpan cacheDuration)
         {
-            return this.GetAsync(new Uri(uri));
+            return this.GetAsync(new Uri(uri), cacheDuration);
         }
 
-        private Task<HttpResponseMessage> GetAsync(Uri uri)
+        private Task<HttpResponseMessage> GetAsync(Uri uri, TimeSpan cacheDuration)
         {
             if (this.HttpCache != null)
             {
