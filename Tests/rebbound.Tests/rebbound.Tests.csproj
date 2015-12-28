@@ -81,6 +81,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CacheTests.cs" />
+    <Compile Include="PaginationTests.cs" />
+    <Compile Include="ProjectTests.cs" />
     <Compile Include="ShotTests.cs" />
     <Compile Include="UserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

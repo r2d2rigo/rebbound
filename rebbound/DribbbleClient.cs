@@ -18,7 +18,9 @@ namespace Rebbound
 
         private const string OAuthTokenEndpoint = "https://dribbble.com/oauth/token";
 
-        private const string UserAuthenticatedEndpoint = "/user";
+        private const string AuthenticatedUserEndpoint = "user";
+
+        private const string FollowingEndpoint = "following";
 
         private const string UserFollowingShotsEndpoint = "/user/following/shots";
 
@@ -27,6 +29,8 @@ namespace Rebbound
         private const string ShotsEndpoint = "shots";
 
         private const string LikesEndpoint = "likes";
+
+        private const string ProjectsEndpoint = "projects";
 
         private const string ShotCommentsEndpoint = "/shots/{0}/comments";
 
@@ -87,12 +91,23 @@ namespace Rebbound
             get;
         }
 
-        public DribbbleClient() : this(null)
+        public int PageSize
+        {
+            get;
+            private set;
+        }
+
+        public DribbbleClient() : this(10)
         {
         }
 
-        public DribbbleClient(ICachedHttpClient cache)
+        public DribbbleClient(int pageSize) : this(pageSize, null)
         {
+        }
+
+        public DribbbleClient(int pageSize, ICachedHttpClient cache)
+        {
+            this.PageSize = pageSize;
             this.httpClient = new HttpClient();
             this.HttpCache = cache;
         }
@@ -129,25 +144,25 @@ namespace Rebbound
 
         public async Task<User> GetAuthenticatedUserAsync()
         {
-            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, UserAuthenticatedEndpoint), TimeSpan.Zero).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, AuthenticatedUserEndpoint)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
 
-        public Task<List<Shot>> GetShotsAsync()
+        public Task<List<Shot>> GetShotsAsync(int page)
         {
-            return GetShotsAsync(ShotsSearchFilter.All);
+            return GetShotsAsync(ShotsSearchFilter.All, page);
         }
 
-        public Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter)
+        public Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, int page)
         {
-            return GetShotsAsync(filter, ShotsSortMode.Views);
+            return GetShotsAsync(filter, ShotsSortMode.Views, page);
         }
 
-        public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode)
+        public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode, int page)
         {
-            var listParameter = "list=";
+            string listParameter = string.Empty;
 
             switch (filter)
             {
@@ -175,7 +190,7 @@ namespace Rebbound
                     break;
             }
 
-            var sortParameter = "sort=";
+            string sortParameter = string.Empty;
 
             switch (sortMode)
             {
@@ -191,24 +206,59 @@ namespace Rebbound
                     break;
             }
 
-            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter)), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        ShotsEndpoint
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "list", listParameter },
+                        { "sort", sortParameter },
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
 
-        public async Task<List<Shot>> GetUserShotsAsync(int userId)
+        public async Task<List<Shot>> GetUserShotsAsync(int userId, int page)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, ShotsEndpoint), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        UsersEndpoint, userId.ToString(), ShotsEndpoint
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
-        public async Task<List<Like>> GetUserLikesAsync(int userId)
+        public async Task<List<Like>> GetUserLikesAsync(int userId, int page)
         {
-            var result = await this.GetAsync(string.Join("/", ApiBase, UsersEndpoint, userId, LikesEndpoint), TimeSpan.FromSeconds(UserCacheDurationInSeconds)).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        UsersEndpoint, userId.ToString(), LikesEndpoint
+                    },
+                    new Dictionary<string, string>()
+        {
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Like>>(result.Content);
@@ -222,11 +272,20 @@ namespace Rebbound
             return await this.DeserializeFromResponseContentAsync<Shot>(result.Content);
         }
 
-        public async Task<List<Shot>> GetFollowingShotsAsync()
+        public async Task<List<Shot>> GetFollowingShotsAsync(int page)
         {
-            var uri = string.Join(string.Empty, ApiBase, UserFollowingShotsEndpoint);
-
-            var result = await this.GetAsync(uri, TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        AuthenticatedUserEndpoint, FollowingEndpoint, ShotsEndpoint
+                    },
+                    new Dictionary<string, string>()
+        {
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
@@ -308,6 +367,22 @@ namespace Rebbound
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
         }
 
+        public async Task<Project> GetProjectAsync(int projectId)
+        {
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            return await this.DeserializeFromResponseContentAsync<Project>(result.Content);
+        }
+
+        public async Task<List<Shot>> GetProjectShotsAsync(int projectId)
+        {
+            var result = await this.GetAsync(string.Join("/", ApiBase, ProjectsEndpoint, projectId, ShotsEndpoint)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
+        }
+
         private async Task<T> DeserializeFromResponseContentAsync<T>(HttpContent content)
         {
             using (var contentStream = await content.ReadAsStreamAsync())
@@ -339,12 +414,38 @@ namespace Rebbound
 
         private Task<HttpResponseMessage> GetAsync(string uri, TimeSpan cacheDuration)
         {
+            return this.GetAsync(new Uri(uri));
+        }
+
+        private Task<HttpResponseMessage> GetAsync(Uri uri)
+        {
             if (this.HttpCache != null)
             {
                 return this.HttpCache.GetAsync(uri, cacheDuration);
             }
 
             return this.httpClient.GetAsync(uri);
+        }
+
+        private static Uri BuildRequestUri(List<string> pathParts)
+        {
+            return BuildRequestUri(pathParts, null);
+        }
+
+        private static Uri BuildRequestUri(List<string> pathParts, Dictionary<string, string> queryParameters)
+        {
+            if (queryParameters != null)
+            {
+                return new Uri(
+                    string.Join("?",
+                        string.Join("/", ApiBase, string.Join("/", pathParts)),
+                        string.Join("&", queryParameters.Select(p => string.Join("=", p.Key, p.Value))))
+                    );
+            }
+
+            return new Uri(
+                    string.Join("/", ApiBase, string.Join("/", pathParts))
+                );
         }
     }
 }
