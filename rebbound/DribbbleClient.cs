@@ -146,19 +146,19 @@ namespace Rebbound
             return await this.DeserializeFromResponseContentAsync<User>(result.Content);
         }
 
-        public Task<List<Shot>> GetShotsAsync()
+        public Task<List<Shot>> GetShotsAsync(int page)
         {
-            return GetShotsAsync(ShotsSearchFilter.All);
+            return GetShotsAsync(ShotsSearchFilter.All, page);
         }
 
-        public Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter)
+        public Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, int page)
         {
-            return GetShotsAsync(filter, ShotsSortMode.Views);
+            return GetShotsAsync(filter, ShotsSortMode.Views, page);
         }
 
-        public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode)
+        public async Task<List<Shot>> GetShotsAsync(ShotsSearchFilter filter, ShotsSortMode sortMode, int page)
         {
-            var listParameter = "list=";
+            string listParameter = string.Empty;
 
             switch (filter)
             {
@@ -186,7 +186,7 @@ namespace Rebbound
                     break;
             }
 
-            var sortParameter = "sort=";
+            string sortParameter = string.Empty;
 
             switch (sortMode)
             {
@@ -202,7 +202,20 @@ namespace Rebbound
                     break;
             }
 
-            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, "?" + string.Join("&", listParameter, sortParameter))).ConfigureAwait(false);
+            var result = await this.GetAsync(
+                BuildRequestUri(
+                    new List<string>()
+                    {
+                        ShotsEndpoint
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "list", listParameter },
+                        { "sort", sortParameter },
+                        { "per_page", this.PageSize.ToString() },
+                        { "page", page.ToString() }
+                    })
+                ).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);

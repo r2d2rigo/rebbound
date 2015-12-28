@@ -45,5 +45,13 @@ namespace Rebbound.Tests
 
             Assert.AreEqual(PageSize, userFollowingShots.Count);
         }
+
+        [TestMethod]
+        public async Task TestShotsPageSizeAsync()
+        {
+            var shots = await dribbbleService.GetShotsAsync(1);
+
+            Assert.AreEqual(PageSize, shots.Count);
+        }
     }
 }
