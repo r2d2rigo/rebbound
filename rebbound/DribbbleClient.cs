@@ -32,7 +32,7 @@ namespace Rebbound
 
         private const string ProjectsEndpoint = "projects";
 
-        private const string ShotCommentsEndpoint = "/shots/{0}/comments";
+        private const string ShotCommentsEndpoint = "comments";
 
         private const string ShotPaletteEndpoint = "https://www.dribbble.com/shots/{0}/colors.aco";
 
@@ -365,10 +365,26 @@ namespace Rebbound
 
         public async Task<List<Comment>> GetShotCommentsAsync(int shotId)
         {
-            var result = await this.GetAsync(string.Join(string.Empty, ApiBase, string.Format(ShotCommentsEndpoint, shotId)), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
+            var result = await this.GetAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId.ToString(), ShotCommentsEndpoint), TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
             this.UpdateRequestLimits(result);
 
             return await this.DeserializeFromResponseContentAsync<List<Comment>>(result.Content);
+        }
+
+        public async Task<CommentResult> CreateShotCommentAsync(int shotId, string commentBody)
+        {
+            var result = await this.PostAsync(string.Join("/", ApiBase, ShotsEndpoint, shotId.ToString(), ShotCommentsEndpoint), "{ \"body\" : \"" + commentBody + "\" }").ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            switch (result.StatusCode)
+            {
+                case System.Net.HttpStatusCode.Forbidden:
+                    return CommentResult.Unauthorized;
+                case System.Net.HttpStatusCode.Created:
+                    return CommentResult.Created;
+                default:
+                    return CommentResult.Error;
+            }
         }
 
         public async Task<Project> GetProjectAsync(int projectId)
@@ -429,6 +445,16 @@ namespace Rebbound
             }
 
             return this.httpClient.GetAsync(uri);
+        }
+
+        private Task<HttpResponseMessage> PostAsync(string uri, string content)
+        {
+            return this.PostAsync(new Uri(uri), content);
+        }
+
+        private Task<HttpResponseMessage> PostAsync(Uri uri, string content)
+        {
+            return this.httpClient.PostAsync(uri, new StringContent(content));
         }
 
         private static Uri BuildRequestUri(List<string> pathParts)

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Rebbound.Tests
 {
     [TestClass]
-    class ProjectTests
+    public class ProjectTests
     {
         private DribbbleClient dribbbleService;
 
@@ -23,15 +23,15 @@ namespace Rebbound.Tests
         [TestMethod]
         public async Task TestGetProjectAsync()
         {
-            var project = await dribbbleService.GetProjectAsync(1);
+            var project = await dribbbleService.GetProjectAsync(2);
 
-            Assert.AreEqual(1, project.Id);
+            Assert.AreEqual(2, project.Id);
         }
 
         [TestMethod]
         public async Task TestGetProjectShotsAsync()
         {
-            var projectShots = await dribbbleService.GetProjectShotsAsync(1);
+            var projectShots = await dribbbleService.GetProjectShotsAsync(2);
 
             Assert.IsNotNull(projectShots);
             Assert.AreNotEqual(0, projectShots.Count);

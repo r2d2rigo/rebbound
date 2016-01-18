@@ -50,8 +50,12 @@ namespace Rebbound.Models
         //public int rebounds_received_count { get; set; }
         //public int shots_count { get; set; }
         //public int teams_count { get; set; }
-        //public bool can_upload_shot { get; set; }
-        //public string type { get; set; }
+
+        [JsonProperty("can_upload_shot")]
+        public bool CanUploadShot { get; set; }
+
+        [JsonProperty("type")]
+        public string Type { get; set; }
         //public bool pro { get; set; }
         //public string buckets_url { get; set; }
         //public string followers_url { get; set; }
