@@ -36,5 +36,14 @@ namespace Rebbound.Tests
             Assert.IsNotNull(projectShots);
             Assert.AreNotEqual(0, projectShots.Count);
         }
+
+        [TestMethod]
+        public async Task TestGetUserProjectsAsync()
+        {
+            var userProjects = await dribbbleService.GetUserProjectsAsync(1);
+
+            Assert.IsNotNull(userProjects);
+            Assert.AreNotEqual(0, userProjects.Count);
+        }
     }
 }

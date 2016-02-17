@@ -403,6 +403,15 @@ namespace Rebbound
             return await this.DeserializeFromResponseContentAsync<List<Shot>>(result.Content);
         }
 
+        public async Task<List<Project>> GetUserProjectsAsync(int userId)
+        {
+            var requestUri = string.Join("/", ApiBase, UsersEndpoint, userId.ToString(), ProjectsEndpoint);
+            var result = await this.GetAsync(requestUri, TimeSpan.FromSeconds(ShotCacheDurationInSeconds)).ConfigureAwait(false);
+            this.UpdateRequestLimits(result);
+
+            return await this.DeserializeFromResponseContentAsync<List<Project>>(result.Content);
+        }
+
         private async Task<T> DeserializeFromResponseContentAsync<T>(HttpContent content)
         {
             using (var contentStream = await content.ReadAsStreamAsync())

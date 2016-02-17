@@ -38,5 +38,6 @@ namespace Rebbound
 
         Task<Project> GetProjectAsync(int projectId);
         Task<List<Shot>> GetProjectShotsAsync(int projectId);
+        Task<List<Project>> GetUserProjectsAsync(int userId);
     }
 }
